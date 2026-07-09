@@ -20,7 +20,7 @@ the state machine, the architectures, and the reasoning are the real ones, and t
 README maps each to production.
 
 This is a **bonus dive**. It picks up exactly where
-[Multimodal](https://github.com/Ailuue/multimodal-deep-dive) stops — that dive
+[Multimodal](https://github.com/alexvervloet/multimodal-deep-dive) stops — that dive
 covers *batch* speech-to-text and text-to-speech and lists realtime as out of scope;
 this is that scope. Its code depends on none of the others.
 
@@ -217,14 +217,14 @@ to real audio and hardening the conversation:
 - **Better turn detection** — a trained VAD / end-pointing model instead of a
   silence threshold, plus handling backchannels ("mm-hm") that *aren't* interruptions.
 - **Tools & RAG in a voice loop** — let the agent call functions or retrieve
-  ([RAG dive](https://github.com/Ailuue/rag-deep-dive)) mid-conversation without
+  ([RAG dive](https://github.com/alexvervloet/rag-deep-dive)) mid-conversation without
   killing latency, and speak a "let me check…" while it works.
 - **Telephony** — SIP/PSTN integration, echo cancellation, and jitter buffers for
   real phone calls.
 - **Emotion & prosody** — using and producing tone, not just words — the edge
   speech-to-speech models have.
 - **Evaluating voice** — latency percentiles, interruption handling, and
-  transcription accuracy as numbers you track ([Evals dive](https://github.com/Ailuue/evals-deep-dive)).
+  transcription accuracy as numbers you track ([Evals dive](https://github.com/alexvervloet/evals-deep-dive)).
 
 ---
 
@@ -245,7 +245,7 @@ piece becomes when it's real:
 
 The general ops machinery — observability, cost, reliability, caching, guardrails,
 eval gates — is built from scratch and wired into one running app in
-**[Production](https://github.com/Ailuue/ai-in-production-deep-dive)** (#8), which
+**[Production](https://github.com/alexvervloet/ai-in-production-deep-dive)** (#8), which
 runs offline on a mock provider.
 
 ---
@@ -300,26 +300,27 @@ and capstone — and they share one house style: provider-agnostic where it make
 sense, built from scratch (no frameworks), offline-first examples, and a real
 capstone. Do them in any order; this sequence builds naturally:
 
-1. [OpenAI API](https://github.com/Ailuue/openai-api-deep-dive) — the API from zero
-2. [Claude API](https://github.com/Ailuue/claude-api-deep-dive) — the same ideas, the Anthropic way
-3. [Prompt Engineering](https://github.com/Ailuue/prompt-engineering-deep-dive) — shape model behavior with better prompts
-4. [RAG](https://github.com/Ailuue/rag-deep-dive) — answer questions over your own documents
-5. [Evals](https://github.com/Ailuue/evals-deep-dive) — measure whether a change actually helps
-6. [Agents](https://github.com/Ailuue/agents-deep-dive) — give a model tools and a loop so it can act
-7. [Prompt Injection & Guardrails](https://github.com/Ailuue/prompt-injection-deep-dive) — attack and defend all of the above
-8. [Production](https://github.com/Ailuue/ai-in-production-deep-dive) — operate one app end to end
+1. [OpenAI API](https://github.com/alexvervloet/openai-api-deep-dive) — the API from zero
+2. [Claude API](https://github.com/alexvervloet/claude-api-deep-dive) — the same ideas, the Anthropic way
+3. [Prompt Engineering](https://github.com/alexvervloet/prompt-engineering-deep-dive) — shape model behavior with better prompts
+4. [RAG](https://github.com/alexvervloet/rag-deep-dive) — answer questions over your own documents
+5. [Evals](https://github.com/alexvervloet/evals-deep-dive) — measure whether a change actually helps
+6. [Agents](https://github.com/alexvervloet/agents-deep-dive) — give a model tools and a loop so it can act
+7. [Prompt Injection & Guardrails](https://github.com/alexvervloet/prompt-injection-deep-dive) — attack and defend all of the above
+8. [Production](https://github.com/alexvervloet/ai-in-production-deep-dive) — operate one app end to end
 
 **Bonus dives** — standalone, slotting in where they're most useful:
 
-- [Agent Harnesses](https://github.com/Ailuue/agent-harness-deep-dive) — build on the loop: hooks, permissions, sandboxing, subagents
-- [Context Engineering](https://github.com/Ailuue/context-engineering-deep-dive) — manage what's in the window
-- [Multimodal](https://github.com/Ailuue/multimodal-deep-dive) — images & audio, not just text
-- [Realtime Voice](https://github.com/Ailuue/realtime-voice-deep-dive) — low-latency speech-to-speech agents
-- [Fine-tuning](https://github.com/Ailuue/fine-tuning-deep-dive) — teach a model new behavior by example
-- [MCP](https://github.com/Ailuue/mcp-deep-dive) — serve tools, data & prompts over a standard protocol
-- [Local Models](https://github.com/Ailuue/local-models-deep-dive) — run open-weight models on your own machine
+- [Agent Harnesses](https://github.com/alexvervloet/agent-harness-deep-dive) — build on the loop: hooks, permissions, sandboxing, subagents
+- [Context Engineering](https://github.com/alexvervloet/context-engineering-deep-dive) — manage what's in the window
+- [Multimodal](https://github.com/alexvervloet/multimodal-deep-dive) — images & audio, not just text
+- [Realtime Voice](https://github.com/alexvervloet/realtime-voice-deep-dive) — low-latency speech-to-speech agents
+- [Fine-tuning](https://github.com/alexvervloet/fine-tuning-deep-dive) — teach a model new behavior by example
+- [MCP](https://github.com/alexvervloet/mcp-deep-dive) — serve tools, data & prompts over a standard protocol
+- [Local Models](https://github.com/alexvervloet/local-models-deep-dive) — run open-weight models on your own machine
+- [Observability](https://github.com/alexvervloet/observability-deep-dive) — watch a running app over time: drift, quality, alerting, the flywheel
 
 **Realtime Voice is a bonus dive.** It slots right after
-[Multimodal](https://github.com/Ailuue/multimodal-deep-dive) — that dive does batch
+[Multimodal](https://github.com/alexvervloet/multimodal-deep-dive) — that dive does batch
 speech-to-text and text-to-speech and marks realtime out of scope; this is that
 scope.
