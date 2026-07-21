@@ -1,4 +1,4 @@
-# This dive is a fully OFFLINE simulator — it needs no API key and no provider SDK.
+# This dive is a fully OFFLINE simulator: it needs no API key and no provider SDK.
 # python-dotenv is here only for parity with the sibling repos' setup flow; rich
 # renders the timeline output.
 python-dotenv>=1.0.0

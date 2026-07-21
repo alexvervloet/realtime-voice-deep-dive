@@ -1,11 +1,10 @@
 """
-Setup check — run this first.
-=============================
+Setup check: run this first.
 
     python check_setup.py
 
 Checks your Python version and the (tiny) package list. Makes NO API calls and
-needs NO key — this whole dive is an offline simulator. Uses only the standard
+needs NO key; this whole dive is an offline simulator. Uses only the standard
 library, so it runs even before `pip install`.
 """
 
@@ -34,7 +33,7 @@ def check_python():
     if (major, minor) >= (3, 10):
         ok(f"Python {major}.{minor} (3.10+ required)")
         return True
-    fail(f"Python {major}.{minor} — this repo needs Python 3.10 or newer.")
+    fail(f"Python {major}.{minor}: this repo needs Python 3.10 or newer.")
     return False
 
 
@@ -46,9 +45,9 @@ def check_dependencies():
         ("dotenv", "python-dotenv", "parity with the sibling repos (no key needed)"),
     ]:
         if importlib.util.find_spec(import_name) is not None:
-            ok(f"{pip_name} — {purpose}")
+            ok(f"{pip_name}: {purpose}")
         else:
-            fail(f"{pip_name} MISSING — {purpose}")
+            fail(f"{pip_name} MISSING: {purpose}")
             missing.append(pip_name)
     if missing:
         print("\n    Install with:  pip install -r requirements.txt")
@@ -60,13 +59,13 @@ def main():
     py = check_python()
     deps = check_dependencies()
     print("\nAPI key")
-    ok("none needed — this dive is a fully offline simulator.")
+    ok("none needed; this dive is a fully offline simulator.")
     print()
     if py and deps:
         print(_c("All set! 🎉", "1;32"))
         print("Start here:  python examples/01_audio_is_frames.py")
         return 0
-    print(_c("Not ready yet — fix the ✗ items above, then run this again.", "1;31"))
+    print(_c("Not ready yet. Fix the ✗ items above, then run this again.", "1;31"))
     return 1
 
 
