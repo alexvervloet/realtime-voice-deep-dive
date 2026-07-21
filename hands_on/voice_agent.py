@@ -1,9 +1,8 @@
 """
-Capstone — a simulated realtime voice agent you can drive.
-==========================================================
+Capstone: a simulated realtime voice agent you can drive.
 
 Everything assembled: the turn-taking state machine, both architectures, the
-latency readout, and a barge-in demo — wired to a CLI. It's a *simulator* (typed
+latency readout, and a barge-in demo, wired to a CLI. It's a *simulator* (typed
 turns stand in for speech; see the README for why realtime voice can't be shown
 honestly offline otherwise), but the mechanics are the real ones.
 
