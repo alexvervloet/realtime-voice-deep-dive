@@ -1,0 +1,43 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # 3.10 is the floor check_setup.py advertises; 3.13 is what it is developed on.
+        python-version: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python check_setup.py
+      - run: python -m compileall -q voice examples hands_on tests
+      - run: python -m unittest discover -v
+      - name: Run every lesson
+        run: |
+          for example in examples/[0-9][0-9]_*.py; do
+            echo "--- $example"
+            python "$example"
+          done
+      - name: Run both capstone demos in both modes
+        run: |
+          for mode in pipeline speech_to_speech; do
+            for demo in dialogue barge-in; do
+              echo "--- $mode / $demo"
+              python hands_on/voice_agent.py --mode "$mode" --demo "$demo"
+            done
+          done
+      - name: The interactive loop exits cleanly on EOF
+        run: printf 'hello there\nquit\n' | python hands_on/voice_agent.py
