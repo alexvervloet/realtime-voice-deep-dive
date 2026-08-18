@@ -28,10 +28,36 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
 
-from voice import RealtimeSession, describe, ensure_ready, merge, utterance
+from voice import Frame, RealtimeSession, describe, ensure_ready, merge, utterance
 
 
-def run_stream(mode: str, frames) -> None:
+# The scripted demos live here as named data so tests/ can assert that they still
+# produce the timelines the README, EXERCISES and TEXTBOOK describe.
+#
+# BARGE_IN_AT_MS is chosen to fall between the two architectures' first audio: the
+# speech-to-speech agent is already talking and gets cut off, the pipeline is still
+# thinking and never speaks at all. Run both modes and compare.
+BARGE_IN_AT_MS = 1800
+
+
+def dialogue_stream() -> list[Frame]:
+    """Three turns, spaced so every reply finishes before the next turn starts."""
+    return merge(
+        utterance("hello there", start_ms=0),
+        utterance("what is the weather today", start_ms=4000),
+        utterance("tell me a joke", start_ms=9000),
+    )
+
+
+def barge_in_stream() -> list[Frame]:
+    """One turn, interrupted partway through the agent's answer."""
+    return merge(
+        utterance("tell me a joke", start_ms=0),
+        utterance("actually what time is it", start_ms=BARGE_IN_AT_MS),
+    )
+
+
+def run_stream(mode: str, frames: list[Frame]) -> None:
     for e in RealtimeSession(mode=mode).run(frames):
         print("  " + e.line())
 
@@ -67,20 +93,10 @@ def main() -> int:
 
     if args.demo == "dialogue":
         print("Scripted clean dialogue (no interruptions):\n")
-        run_stream(args.mode, merge(
-            utterance("hello there", start_ms=0),
-            utterance("what is the weather today", start_ms=4000),
-            utterance("tell me a joke", start_ms=9000),
-        ))
+        run_stream(args.mode, dialogue_stream())
     elif args.demo == "barge-in":
         print("Scripted barge-in (user interrupts the agent mid-answer):\n")
-        # 1800ms is chosen to fall between the two architectures' first audio: the
-        # speech-to-speech agent is already talking and gets cut off, the pipeline is
-        # still thinking and never speaks at all. Run both modes and compare.
-        run_stream(args.mode, merge(
-            utterance("tell me a joke", start_ms=0),
-            utterance("actually what time is it", start_ms=1800),
-        ))
+        run_stream(args.mode, barge_in_stream())
     else:
         interactive(args.mode)
     return 0
