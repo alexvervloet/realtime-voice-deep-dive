@@ -280,7 +280,7 @@ Run `python check_setup.py` first. Then, by symptom:
 
 | What you see | What it means / the fix |
 |--------------|-------------------------|
-| `ModuleNotFoundError` (rich / dotenv) | Deps aren't installed or the venv isn't active. `source .venv/bin/activate` then `pip install -r requirements.txt`. |
+| `ModuleNotFoundError` (dotenv) | Deps aren't installed or the venv isn't active. `source .venv/bin/activate` then `pip install -r requirements.txt`. |
 | "this dive is an offline simulator" note | You set `PROVIDER` to something other than `mock`. That's fine; there's only a mock here, and the note is just letting you know. |
 | The timeline's millisecond numbers look arbitrary | They're teaching approximations (see `voice/stages.py`); the *shape* (more hops = more delay, barge-in cancels output) is the lesson, not the exact figures. |
 | Barge-in didn't fire when I expected | The interrupting turn has to start *before* the agent's response ends. Move its `start_ms` earlier, or pick a longer reply. |

@@ -41,7 +41,6 @@ def check_dependencies():
     print("\nDependencies")
     missing = []
     for import_name, pip_name, purpose in [
-        ("rich", "rich", "renders the timeline output"),
         ("dotenv", "python-dotenv", "parity with the sibling repos (no key needed)"),
     ]:
         if importlib.util.find_spec(import_name) is not None:
