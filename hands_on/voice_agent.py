@@ -53,8 +53,6 @@ def interactive(mode: str) -> None:
         for e in session.run(utterance(line)):
             if e.kind == "response_start":
                 print(f"  agent> {e.text}   (first audio {e.latency_ms}ms after you stopped)")
-            elif e.kind == "user_speech_end":
-                pass  # we already have the text
 
 
 def main() -> int:
