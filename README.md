@@ -61,8 +61,8 @@ pip install -r requirements.txt
 
 # 3. Copy the env file: this dive is a fully offline simulator (no key needed)
 cp .env.example .env
-#    (Wiring up a real realtime API? Its key goes in your OS keychain, not .env 
-#     see ../SECRETS.md.)
+#    (Wiring up a real realtime API? Its key goes in your OS keychain, not .env.
+#     See SECRETS.md in the series repo: https://github.com/alexvervloet/ai-engineering-deep-dive)
 
 # 4. Confirm everything is wired up (makes no API call, costs nothing)
 python check_setup.py
@@ -78,8 +78,9 @@ why. Everything runs offline and deterministically.
 > of which belongs in a small, readable, offline teaching repo. So we simulate the
 > *mechanics* (frames, latency, turn-taking, barge-in) exactly and deterministically.
 > The state machine and architecture choices are real; only the transport is mocked.
-> Production uses the **OpenAI Realtime API** (speech-to-speech over WebSocket/WebRTC)
-> or a streaming STT/LLM/TTS pipeline, mapped in "From teaching code to production."
+> Production uses a speech-to-speech API over WebSocket or WebRTC (OpenAI's Realtime
+> API and Google's Gemini Live API are the two obvious ones) or a streaming
+> STT/LLM/TTS pipeline, mapped in "From teaching code to production."
 
 ---
 
@@ -218,11 +219,17 @@ change how the agent feels, it changes which code path runs.
 You've built the mechanics of a realtime voice agent. The frontier is wiring them
 to real audio and hardening the conversation:
 
-- **A real transport**: the OpenAI Realtime API over WebSocket or WebRTC; send mic
-  frames, receive audio frames, handle the session events. This dive's state machine
-  is what you drive with it.
-- **A real pipeline**: streaming STT (e.g. Whisper/Deepgram), a streaming LLM, and
-  streaming TTS, with each stage overlapped so the latency stacks less.
+- **A real transport**: a speech-to-speech API over WebSocket or WebRTC (OpenAI's
+  Realtime API, Google's Gemini Live API); send mic frames, receive audio frames,
+  handle the session events. This dive's state machine is what you drive with it.
+- **A real pipeline**: a *streaming* STT model (batch Whisper is the wrong tool
+  here; reach for a realtime transcription endpoint or a vendor built for it, like
+  Deepgram or AssemblyAI), a streaming LLM, and a streaming TTS vendor, with each
+  stage overlapped so the latency stacks less.
+- **Not writing the plumbing yourself**: Pipecat and LiveKit Agents are the
+  open-source orchestrators most teams reach for. They own the transport, the VAD,
+  and the interruption handling. Read one after this dive and you'll recognise every
+  moving part, which is the point of building it from scratch first.
 - **Better turn detection**: a trained VAD / end-pointing model instead of a
   silence threshold, plus handling backchannels ("mm-hm") that *aren't* interruptions.
 - **Tools & RAG in a voice loop**: let the agent call functions or retrieve
