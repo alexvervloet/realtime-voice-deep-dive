@@ -29,7 +29,7 @@ print(f"Provider: {describe()}\n")
 # The user asks for a (long) joke, then cuts in before it finishes.
 stream = merge(
     utterance("tell me a joke", start_ms=0),
-    utterance("actually what time is it", start_ms=1700),  # interrupts the joke
+    utterance("actually what time is it", start_ms=2400),  # interrupts the joke
 )
 
 print("User asks for a joke, then interrupts mid-answer:\n")
@@ -37,7 +37,7 @@ for e in RealtimeSession(mode="pipeline").run(stream):
     print("  " + e.line())
 
 print(
-    "\nThe agent started the joke at 1450ms and the user cut in at 1700ms, so the\n"
+    "\nThe agent started the joke at 2100ms and the user cut in at 2400ms, so the\n"
     "session fired a BARGE-IN, stopped the response, and treated the new speech as\n"
     "the next turn. The rest of the joke was never 'played'. Two things make this\n"
     "work in production: full-duplex audio (you're still *listening* while you\n"

@@ -7,8 +7,10 @@ over it. So "time to first audio", from the user stopping to the first sound bac
 is the number you engineer against.
 
 This measures it both ways on the same turn: the three-hop pipeline vs a single
-speech-to-speech model. Same reply, very different delay, because the pipeline pays
-STT + LLM + TTS in series while speech-to-speech pays one hop.
+speech-to-speech model. Same reply, different delay, because the pipeline pays
+STT + LLM + TTS in series while speech-to-speech pays one hop. Both first wait out
+the same end-pointing window, which is why the honest ratio is smaller than a
+comparison of model latencies alone would suggest.
 
 Run it:
 
@@ -21,6 +23,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from voice import RealtimeSession, describe, ensure_ready, utterance
+from voice.stages import VAD_SILENCE_MS
 
 ensure_ready()
 print(f"Provider: {describe()}\n")
@@ -38,16 +41,26 @@ def first_audio_latency(mode: str) -> int:
 pipe = first_audio_latency("pipeline")
 s2s = first_audio_latency("speech_to_speech")
 
-print("Time to first audio (from the moment the user stops speaking):")
-print(f"  pipeline (STT+LLM+TTS)   {pipe:>4}ms")
-print(f"  speech-to-speech         {s2s:>4}ms")
-print(f"  speech-to-speech is {pipe / s2s:.1f}× faster to first sound\n")
+def ms(v: int) -> str:
+    return f"{v}ms"
+
+
+print("Time to first audio, from the user's last word to the first sound back:\n")
+print(f"  {'':<24}{'end-pointing':>14}{'processing':>13}{'felt':>10}")
+print(f"  {'pipeline (STT+LLM+TTS)':<24}{ms(VAD_SILENCE_MS):>14}{ms(pipe - VAD_SILENCE_MS):>13}{ms(pipe):>10}")
+print(f"  {'speech-to-speech':<24}{ms(VAD_SILENCE_MS):>14}{ms(s2s - VAD_SILENCE_MS):>13}{ms(s2s):>10}")
+print(f"\n  Overall, speech-to-speech is {pipe / s2s:.1f}× faster to first sound. On the")
+print(f"  processing it actually controls, it is {(pipe - VAD_SILENCE_MS) / (s2s - VAD_SILENCE_MS):.1f}× faster.\n")
 
 print(
-    f"The pipeline's {pipe}ms is three hops stacked; speech-to-speech collapses them\n"
-    "into one, which is why it feels more natural in fast back-and-forth. But latency\n"
-    "isn't the only axis (example 06): the pipeline gives you a text transcript in the\n"
-    "middle to log, moderate, and edit; speech-to-speech hides it. And you can shrink\n"
-    "the pipeline's gap a lot by STREAMING each stage so they overlap instead of\n"
-    "stacking. Engineer against the number your users feel, not the one on a spec sheet."
+    "The pipeline's processing is three hops stacked; speech-to-speech collapses them\n"
+    "into one, which is why it feels more natural in fast back-and-forth. But notice\n"
+    "what the third column does to the sales pitch: both designs wait out the same\n"
+    "end-pointing window before either of them starts, so the advantage the user\n"
+    "actually hears is smaller than a comparison of the models alone would suggest.\n"
+    "Latency isn't the only axis either (example 06): the pipeline gives you a text\n"
+    "transcript in the middle to log, moderate, and edit; speech-to-speech hides it.\n"
+    "And you can shrink the pipeline's gap a lot by STREAMING each stage so they\n"
+    "overlap instead of stacking. Engineer against the number your users feel, not\n"
+    "the one on a spec sheet."
 )

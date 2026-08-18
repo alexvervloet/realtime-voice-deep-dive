@@ -42,10 +42,14 @@ utts = segment(frames, VAD_SILENCE_MS)
 turn = utts[0]
 print(f"\nVAD (>= {VAD_SILENCE_MS}ms of silence) closed the turn:")
 print(f"  speech ran {turn.start_ms}–{turn.end_ms}ms, transcript = {' '.join(turn.words)!r}")
+print(f"  but the turn is only *detected* at {turn.end_ms + VAD_SILENCE_MS}ms, once the silence run is long enough")
 
 print(
     "\nThat's the whole substrate of realtime voice: frames in, frames out, always\n"
     "'so far'. Deciding the user is *done* (turn detection) is a judgment call over\n"
     "silence. Too eager and you cut them off, too patient and the agent feels slow.\n"
-    "Everything in this dive is built on this stream."
+    "Note the gap between the last word and the detection: that silence window is\n"
+    "pure waiting, nothing downstream can start inside it, and so it is the first\n"
+    "line of the latency budget in example 02, and the one line both architectures\n"
+    "pay alike. Everything in this dive is built on this stream."
 )
