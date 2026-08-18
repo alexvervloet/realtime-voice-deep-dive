@@ -13,6 +13,8 @@ The two hard parts, both handled here:
   1. Turn detection: deciding the user is *done* talking. We use a simple
      voice-activity rule: a run of silence longer than `vad_silence_ms` after
      speech ends the turn. (Real systems use a trained VAD / end-pointing model.)
+     Nothing downstream starts until this fires, so that wait is the first entry in
+     every latency budget, and the one both architectures pay alike.
   2. Barge-in: the human interrupts while the agent is speaking. A good voice
      agent stops *immediately*, discards the rest of its planned audio, and starts
      listening. An agent that talks over the user feels broken.
@@ -27,7 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from .audio import Frame
-from .stages import ResponsePlan, plan_pipeline, plan_speech_to_speech, transcribe
+from .stages import VAD_SILENCE_MS, ResponsePlan, plan_pipeline, plan_speech_to_speech, transcribe
 
 
 @dataclass
@@ -35,7 +37,9 @@ class Event:
     t_ms: int
     kind: str
     text: str = ""
-    latency_ms: int | None = None  # set on response_start: time-to-first-audio
+    # Set on response_start: the gap the user feels, from their last word to the
+    # first sound back. That is the end-pointing wait plus the processing latency.
+    latency_ms: int | None = None
 
     def line(self) -> str:
         stamp = f"[{self.t_ms:>5}ms]"
@@ -44,7 +48,7 @@ class Event:
         if self.kind == "user_speech_end":
             return f"{stamp} 🎙  user stops: {self.text!r}"
         if self.kind == "response_start":
-            return f"{stamp} 🔊 agent speaks (first audio {self.latency_ms}ms after turn): {self.text!r}"
+            return f"{stamp} 🔊 agent speaks (first audio {self.latency_ms}ms after the user stopped): {self.text!r}"
         if self.kind == "response_end":
             return f"{stamp} ✓  agent finished speaking"
         if self.kind == "interrupted":
@@ -88,7 +92,7 @@ def segment(frames: list[Frame], vad_silence_ms: int) -> list[Utterance]:
 class RealtimeSession:
     """A turn-taking session in one of two modes: 'pipeline' or 'speech_to_speech'."""
 
-    def __init__(self, mode: str = "pipeline", *, vad_silence_ms: int = 500):
+    def __init__(self, mode: str = "pipeline", *, vad_silence_ms: int = VAD_SILENCE_MS):
         if mode not in ("pipeline", "speech_to_speech"):
             raise ValueError("mode must be 'pipeline' or 'speech_to_speech'")
         self.mode = mode
@@ -106,7 +110,10 @@ class RealtimeSession:
             events.append(Event(utt.end_ms, "user_speech_end", text=transcript))
 
             plan = self._plan(transcript)
-            resp_start = utt.end_ms + plan.first_audio_ms
+            # Nothing can start until end-pointing decides the turn is over, so the
+            # felt gap is that wait plus the architecture's processing latency.
+            felt_latency = self.vad_silence_ms + plan.first_audio_ms
+            resp_start = utt.end_ms + felt_latency
             resp_end = resp_start + plan.duration_ms
 
             next_start = utterances[i + 1].start_ms if i + 1 < len(utterances) else None
@@ -118,10 +125,10 @@ class RealtimeSession:
                                     text="user spoke before the agent's audio started; planned reply dropped"))
             elif next_start is not None and next_start < resp_end:
                 # Classic barge-in: the agent was mid-sentence when the user cut in.
-                events.append(Event(resp_start, "response_start", text=plan.text, latency_ms=plan.first_audio_ms))
+                events.append(Event(resp_start, "response_start", text=plan.text, latency_ms=felt_latency))
                 events.append(Event(next_start, "interrupted",
                                     text="user cut in mid-response; agent stops and listens"))
             else:
-                events.append(Event(resp_start, "response_start", text=plan.text, latency_ms=plan.first_audio_ms))
+                events.append(Event(resp_start, "response_start", text=plan.text, latency_ms=felt_latency))
                 events.append(Event(resp_end, "response_end"))
         return sorted(events, key=lambda e: e.t_ms)
