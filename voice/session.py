@@ -60,22 +60,26 @@ class Utterance:
 
 
 def segment(frames: list[Frame], vad_silence_ms: int) -> list[Utterance]:
-    """Group a frame stream into utterances using the silence-based VAD rule."""
+    """Group a frame stream into utterances using the silence-based VAD rule.
+
+    `frames` must be in time order (audio.merge sorts for you). An utterance's
+    `end_ms` is when its last word finishes playing, not when it starts, so the
+    silence run is measured from real end-of-speech."""
     utterances: list[Utterance] = []
     cur: Utterance | None = None
-    last_speech_t = None
+    speech_end_t = None
     for f in frames:
         if f.kind == "speech":
             if cur is None:
                 cur = Utterance(start_ms=f.t_ms, end_ms=f.t_ms)
             cur.words.append(f.text)
-            cur.end_ms = f.t_ms
-            last_speech_t = f.t_ms
+            speech_end_t = f.t_ms + f.duration_ms
+            cur.end_ms = speech_end_t
         else:  # silence
-            if cur is not None and last_speech_t is not None and f.t_ms - last_speech_t >= vad_silence_ms:
+            if cur is not None and speech_end_t is not None and f.t_ms - speech_end_t >= vad_silence_ms:
                 utterances.append(cur)
                 cur = None
-                last_speech_t = None
+                speech_end_t = None
     if cur is not None:
         utterances.append(cur)
     return utterances

@@ -8,8 +8,9 @@ frames so far. Everything else (turn detection, interruption, latency) follows f
 that.
 
 To keep this dive offline and deterministic, a frame here carries a *word* of text
-as a stand-in for ~20 ms of PCM audio, plus a timestamp in milliseconds. A real
-frame carries raw audio samples; the timing and the streaming shape are the same.
+as a stand-in for ~20 ms of PCM audio, plus a timestamp in milliseconds and the
+span of time it occupies. A real frame carries raw audio samples; the timing and
+the streaming shape are the same.
 """
 
 from __future__ import annotations
@@ -23,11 +24,13 @@ class Frame:
 
     kind "speech" carries a word (our stand-in for audio energy); kind "silence"
     carries nothing and is what a voice-activity detector uses to find the end of a
-    turn."""
+    turn. `duration_ms` is how much time the frame occupies, so a turn can end when
+    the last word *finishes* rather than when it starts."""
 
     t_ms: int
     kind: str  # "speech" | "silence"
     text: str = ""
+    duration_ms: int = 20
 
 
 def utterance(words: str, *, start_ms: int = 0, word_ms: int = 150, trailing_silence_ms: int = 600,
@@ -39,12 +42,12 @@ def utterance(words: str, *, start_ms: int = 0, word_ms: int = 150, trailing_sil
     frames: list[Frame] = []
     t = start_ms
     for w in words.split():
-        frames.append(Frame(t_ms=t, kind="speech", text=w))
+        frames.append(Frame(t_ms=t, kind="speech", text=w, duration_ms=word_ms))
         t += word_ms
     # Trailing silence, one frame every `frame_ms`.
     end_speech = t
     while t < end_speech + trailing_silence_ms:
-        frames.append(Frame(t_ms=t, kind="silence"))
+        frames.append(Frame(t_ms=t, kind="silence", duration_ms=frame_ms))
         t += frame_ms
     return frames
 
