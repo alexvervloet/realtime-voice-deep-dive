@@ -105,11 +105,12 @@ python examples/02_pipeline.py
 The first way to build a voice agent is three models in series: speech-to-text →
 the LLM → text-to-speech. Each hop adds delay, and the number the user *feels* is
 **time-to-first-audio**: how long after they stop talking before they hear
-anything. For the pipeline that's STT + LLM + TTS, all stacked. The example prints
-the budget so you see where the second of dead air comes from, and why streaming
-each stage (so they overlap) is the fix. The pipeline's payoff is **control**:
-there's a text transcript in the middle you can log, moderate, and edit.
-([voice/stages.py](voice/stages.py))
+anything. That's the end-pointing wait first (nothing downstream starts until the
+VAD decides the user is done), then STT + LLM + TTS stacked on top: 1500 ms in
+this repo's budget. The example prints it line by line so you see where the dead
+air comes from, and why streaming each stage (so they overlap) is the fix. The
+pipeline's payoff is **control**: there's a text transcript in the middle you can
+log, moderate, and edit. ([voice/stages.py](voice/stages.py))
 
 ---
 
@@ -151,11 +152,14 @@ python examples/05_latency_budget.py
 ```
 
 Latency is voice's make-or-break metric: humans notice a gap past ~300–500 ms, and
-past that the agent feels sluggish or gets talked over. The example measures
-time-to-first-audio both ways on the same turn, the three-hop pipeline vs a single
-speech-to-speech model, and shows speech-to-speech is meaningfully faster to first
-sound because it collapses three hops into one. Engineer against the number your
-users *feel*, not the one on a spec sheet.
+past that the agent feels sluggish or gets talked over. The example splits
+time-to-first-audio into **end-pointing**, **processing**, and the **felt** total,
+both ways on the same turn. Speech-to-speech is 2× faster on the processing it
+controls, but only 1.5× faster overall (1000 ms vs 1500 ms), because both designs
+wait out the same silence window before either of them starts. That third column
+is the honest one: engineer against the number your users *feel*, not the one on a
+spec sheet, and remember the biggest single line in the budget is usually a
+threshold you chose, not a model you bought.
 
 ---
 
@@ -198,9 +202,11 @@ python hands_on/voice_agent.py --demo barge-in
 
 Read [hands_on/voice_agent.py](hands_on/voice_agent.py): it's just the library
 (`RealtimeSession` + `utterance` + `merge`) wired to a CLI. **Suggested exercise:**
-run `--demo barge-in` in both `--mode pipeline` and `--mode speech_to_speech` and
-watch *when* the interruption lands change; a faster architecture is already
-speaking (and gets cut off later) where the slower one is still thinking.
+run `--demo barge-in` in both `--mode pipeline` and `--mode speech_to_speech`. The
+interruption arrives at the same moment in both, but it lands in a different
+state: speech-to-speech is already telling the joke and gets cut off mid-sentence,
+while the pipeline is still thinking and never says a word. Latency doesn't just
+change how the agent feels, it changes which code path runs.
 
 ---
 
@@ -282,8 +288,8 @@ Run `python check_setup.py` first. Then, by symptom:
 |--------------|-------------------------|
 | `ModuleNotFoundError` (dotenv) | Deps aren't installed or the venv isn't active. `source .venv/bin/activate` then `pip install -r requirements.txt`. |
 | "this dive is an offline simulator" note | You set `PROVIDER` to something other than `mock`. That's fine; there's only a mock here, and the note is just letting you know. |
-| The timeline's millisecond numbers look arbitrary | They're teaching approximations (see `voice/stages.py`); the *shape* (more hops = more delay, barge-in cancels output) is the lesson, not the exact figures. |
-| Barge-in didn't fire when I expected | The interrupting turn has to start *before* the agent's response ends. Move its `start_ms` earlier, or pick a longer reply. |
+| The timeline's millisecond numbers look arbitrary | They're teaching approximations (see `voice/stages.py`); the *shape* (end-pointing first, then hops that stack, and barge-in cancelling output) is the lesson, not the exact figures. |
+| Barge-in didn't fire when I expected | The interrupting turn has to start *before* the agent's response ends. Move its `start_ms` earlier, or pick a longer reply. If it starts before the response *begins*, you get the other branch instead: the planned reply is dropped before a sound comes out. |
 | `SyntaxError` / odd type errors on startup | You're likely on Python 3.9 or older; this repo needs 3.10+. |
 
 Still stuck? Every file is small and self-contained. Open it, read the docstring at
