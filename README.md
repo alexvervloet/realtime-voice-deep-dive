@@ -26,7 +26,10 @@ this is that scope. Its code depends on none of the others.
 
 Like its siblings, it's meant to be *walked through*. Each section ends with
 something to run, and **every section runs offline and free**.
-[EXERCISES.md](EXERCISES.md) has a predict-then-run prompt for each one.
+[EXERCISES.md](EXERCISES.md) has a predict-then-run prompt for each one, and
+[TEXTBOOK.md](TEXTBOOK.md) is the lecture behind this lab: Chapter 12 of the
+[AI Engineering Textbook](https://github.com/alexvervloet/ai-engineering-deep-dive),
+on why conversational time is a harder constraint than machine time.
 
 ---
 
@@ -260,8 +263,10 @@ runs offline on a mock provider.
 
 ```
 check_setup.py              ← run first: verifies Python + packages (no key needed)
-README.md                   ← this guide
+README.md                   ← this guide (the lab)
+TEXTBOOK.md                 ← Chapter 12: the lecture behind the lab
 EXERCISES.md                ← predict-then-run prompts, one per section
+LESSONS.md                  ← what this repo got wrong, and how it was caught
 voice/                      ← the from-scratch simulator (read it!)
   audio.py                  ← audio as a stream of timestamped frames (+ builders)
   stages.py                 ← the two architectures as latency-annotated stages
@@ -276,6 +281,8 @@ examples/
   04_barge_in.py            ← the user interrupts; the agent yields instantly
   05_latency_budget.py      ← time-to-first-audio: pipeline vs speech-to-speech
   06_speech_to_speech.py    ← one model; when to pick it over the pipeline
+tests/
+  test_session.py           ← locks the timelines the docs quote
 ```
 
 ---
@@ -300,7 +307,7 @@ story: the turn-taking machine, with barge-in.
 
 ## The series
 
-This is one of the standalone, hands-on deep dives into building with LLM APIs 
+This is one of the standalone, hands-on deep dives into building with LLM APIs:
 eight core, plus the bonus dives. Each stands on its own, with its own setup, examples,
 and capstone, and they share one house style: provider-agnostic where it makes
 sense, built from scratch (no frameworks), offline-first examples, and a real
@@ -319,12 +326,19 @@ capstone. Do them in any order; this sequence builds naturally:
 
 - [Agent Harnesses](https://github.com/alexvervloet/agent-harness-deep-dive): build on the loop: hooks, permissions, sandboxing, subagents
 - [Context Engineering](https://github.com/alexvervloet/context-engineering-deep-dive): manage what's in the window
+- [AI Data Engineering](https://github.com/alexvervloet/ai-data-engineering-deep-dive): the corpus behind the index: versions, lineage, ACLs, deletes
 - [Multimodal](https://github.com/alexvervloet/multimodal-deep-dive): images & audio, not just text
 - [Realtime Voice](https://github.com/alexvervloet/realtime-voice-deep-dive): low-latency speech-to-speech agents
 - [Fine-tuning](https://github.com/alexvervloet/fine-tuning-deep-dive): teach a model new behavior by example
 - [MCP](https://github.com/alexvervloet/mcp-deep-dive): serve tools, data & prompts over a standard protocol
 - [Local Models](https://github.com/alexvervloet/local-models-deep-dive): run open-weight models on your own machine
 - [Observability](https://github.com/alexvervloet/observability-deep-dive): watch a running app over time: drift, quality, alerting, the flywheel
+- [Architecture](https://github.com/alexvervloet/architecture-deep-dive): the seams between the components, each decision measured rather than asserted
+- [Professional Tools](https://github.com/alexvervloet/professional-tools-deep-dive): rebuild each from-scratch primitive with the tool professionals reach for, and measure both
+
+And the whole series lands in one codebase in the
+[capstone](https://github.com/alexvervloet/deep-dive-capstone): a codebase Q&A tool
+built step by step, one tag per dive.
 
 **Realtime Voice is a bonus dive.** It slots right after
 [Multimodal](https://github.com/alexvervloet/multimodal-deep-dive), since that dive does batch
