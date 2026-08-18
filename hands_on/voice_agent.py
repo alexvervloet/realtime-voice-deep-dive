@@ -76,9 +76,12 @@ def main() -> int:
         ))
     elif args.demo == "barge-in":
         print("Scripted barge-in (user interrupts the agent mid-answer):\n")
+        # 1800ms is chosen to fall between the two architectures' first audio: the
+        # speech-to-speech agent is already talking and gets cut off, the pipeline is
+        # still thinking and never speaks at all. Run both modes and compare.
         run_stream(args.mode, merge(
             utterance("tell me a joke", start_ms=0),
-            utterance("actually what time is it", start_ms=1700),
+            utterance("actually what time is it", start_ms=1800),
         ))
     else:
         interactive(args.mode)
