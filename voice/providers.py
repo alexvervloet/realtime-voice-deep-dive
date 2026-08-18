@@ -11,10 +11,10 @@ no key.
 
 What maps to production: the state machine (session.py), the two architectures
 (stages.py), and the barge-in/latency reasoning are all real. The transport is what
-the mock stands in for. In production you'd use the **OpenAI Realtime API**
-(speech-to-speech over WebSocket/WebRTC) or an STT→LLM→TTS pipeline wired to
-streaming vendors. The README's "From teaching code to production" section maps
-each piece.
+the mock stands in for. In production you'd use a speech-to-speech API over
+WebSocket or WebRTC (OpenAI's Realtime API, Google's Gemini Live API) or an
+STT→LLM→TTS pipeline wired to streaming vendors. The README's "From teaching code
+to production" section maps each piece.
 
 We keep the familiar `provider_name` / `describe` / `ensure_ready` shape so the
 examples read like the rest of the series; there's just one provider here: `mock`.
