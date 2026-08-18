@@ -32,15 +32,19 @@ that call.
 ## Section 3: The pipeline
 
 **Predict (`02`).** The STT→LLM→TTS pipeline has per-stage latencies of 300 / 500 /
-200 ms. What's the time-to-first-audio the user feels, and why isn't it the max of
-the three?
+200 ms, and the VAD waits 500 ms of silence before deciding the user is done.
+What's the time-to-first-audio the user feels, and why isn't it the max of the
+stages?
 
 <details><summary>▸ Answer</summary>
 
-1000 ms, since the three run **in series** (you can't synthesize speech until the LLM
-has produced text until STT has produced a transcript), so the delays add, they
-don't overlap. That full second of dead air is the pipeline's core problem;
-streaming the stages so they overlap is the main way to shrink it.
+1500 ms. The stages run **in series** (you can't synthesize speech until the LLM has
+produced text until STT has produced a transcript), so their delays add rather than
+overlap, and all three sit behind the 500 ms end-pointing wait, because nothing can
+start until the agent concludes the turn is over. If you only counted the models you
+would get 1000 ms and be wrong by a third. Streaming the stages so they overlap is
+the main way to shrink the processing half; tightening the VAD window shrinks the
+other half, at the cost of cutting people off mid-thought.
 </details>
 
 **Recall.** The pipeline is slower than one model, so why would anyone choose it?
@@ -69,8 +73,8 @@ LISTENING → (VAD sees the user stop) → THINKING → (first audio is ready) �
 
 ## Section 5: Barge-in
 
-**Predict (`04`).** The user asks for a joke; the agent starts answering at 1450 ms;
-the user cuts in at 1700 ms. What does the session do, and what happens to the rest
+**Predict (`04`).** The user asks for a joke; the agent starts answering at 2100 ms;
+the user cuts in at 2400 ms. What does the session do, and what happens to the rest
 of the joke?
 
 <details><summary>▸ Answer</summary>
@@ -95,14 +99,19 @@ instant). If you only listened between turns, you couldn't be interrupted.
 
 ## Section 6: The latency budget
 
-**Predict (`05`).** Same turn, pipeline vs speech-to-speech. Which is faster to
-first audio, and roughly by how much given the budgets (pipeline 1000 ms, S2S 500 ms)?
+**Predict (`05`).** Same turn, pipeline vs speech-to-speech, with processing budgets
+of 1000 ms and 500 ms and a 500 ms end-pointing window. Which is faster to first
+audio, and by how much? Careful: there are two defensible answers.
 
 <details><summary>▸ Answer</summary>
 
-Speech-to-speech, about **2× faster** to first sound (500 ms vs 1000 ms), because it
-collapses the three serial hops into one. Latency is voice's make-or-break metric 
-humans notice a gap past ~300-500 ms, so that difference is felt directly.
+Speech-to-speech, by **2× on processing** (500 ms vs 1000 ms) but only **1.5× on the
+gap the user actually hears** (1000 ms vs 1500 ms), because both architectures wait
+out the same 500 ms of end-pointing before either of them starts. The second number
+is the honest one for a product decision, and the habit worth taking: a shared fixed
+cost always compresses a ratio, so quote the improvement your user can perceive, not
+the one your component benchmark shows. Latency is voice's make-or-break metric,
+since humans notice a gap past ~300-500 ms, so that difference is felt directly.
 </details>
 
 ---
@@ -117,7 +126,7 @@ you, and when would you deliberately choose the slower pipeline instead?
 It costs **control and observability**: no transcript to log, moderate, redact,
 or feed to a tool, and it's harder to steer. Choose the pipeline when you need that
 transcript: guardrails/moderation, tool or RAG calls on the text, an auditable log,
-or independent vendor choice per stage. Many production systems go hybrid 
+or independent vendor choice per stage. Many production systems go hybrid:
 speech-to-speech for the turn, a parallel transcript for safety.
 </details>
 
@@ -131,11 +140,12 @@ point? Why not?
 
 <details><summary>▸ Answer</summary>
 
-No. Speech-to-speech starts speaking sooner (lower time-to-first-audio), so by the
-interruption time it's already talking and gets cut off mid-response; the slower
-pipeline may still be in THINKING when the user re-speaks, so the turn is superseded
-before any audio plays. Same interruption, different state, because latency
-changed *when* the agent was speaking.
+No. The interruption arrives at the same moment (1800 ms) in both runs, but it lands
+in a different state. Speech-to-speech began speaking at 1600 ms, so it is cut off
+mid-joke and you see a `response_start` before the barge-in. The pipeline would not
+have spoken until 2100 ms, so it is still in THINKING; the turn is superseded and
+its planned reply is dropped without a sound ever coming out. Same interruption,
+different code path, because latency changed *when* the agent was speaking.
 </details>
 
 **Stretch.** In interactive mode, ask the same question and compare the reported
@@ -147,7 +157,9 @@ laggy assistant, the reason latency dominates voice has landed.
 
 ### Where to take it next
 
-Wire the state machine in `voice/session.py` to a real transport: the OpenAI
-Realtime API over WebSocket, sending mic frames and receiving audio frames. The
-turn-taking, barge-in, and latency logic you built here is exactly what you drive
-with it; only the frames become real.
+Wire the state machine in `voice/session.py` to a real transport: a speech-to-speech
+API over WebSocket (OpenAI's Realtime API, Google's Gemini Live API), sending mic
+frames and receiving audio frames. The turn-taking, barge-in, and latency logic you
+built here is exactly what you drive with it; only the frames become real. If you'd
+rather not write the plumbing, read Pipecat or LiveKit Agents instead: you'll
+recognise every moving part, which is what building it from scratch bought you.
