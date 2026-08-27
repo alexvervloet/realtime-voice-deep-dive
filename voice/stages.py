@@ -13,8 +13,9 @@ a text transcript you can log, moderate, and edit; speech-to-speech hides it). T
 file models each stage as a deterministic transform with a latency budget in
 milliseconds, so the examples can *add up* the delay and compare the two designs
 offline. The budget starts before either architecture does, with the end-pointing
-silence (VAD_SILENCE_MS) both of them wait through. The millisecond figures are teaching approximations. Real numbers vary by
-model, network, and audio length, but the *shape* (more hops = more delay) is exact.
+silence (VAD_SILENCE_MS) both of them wait through. The millisecond figures are
+teaching approximations. Real numbers vary by model, network, and audio length, but
+the *shape* (more hops = more delay) is exact.
 """
 
 from __future__ import annotations
