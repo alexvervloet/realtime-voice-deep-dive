@@ -60,7 +60,7 @@ pip install -r requirements.txt
 # 3. Copy the env file: this dive is a fully offline simulator (no key needed)
 cp .env.example .env
 #    (Wiring up a real realtime API? Its key goes in your OS keychain, not .env.
-#     See SECRETS.md in the series repo: https://github.com/alexvervloet/ai-engineering-deep-dive)
+#     See ../docs/SECRETS.md in the series repo: https://github.com/alexvervloet/ai-engineering-deep-dive)
 
 # 4. Confirm everything is wired up (makes no API call, costs nothing)
 python check_setup.py
