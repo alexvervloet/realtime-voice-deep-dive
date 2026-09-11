@@ -1,6 +1,6 @@
 # Exercises: make the learning stick
 
-Reading code teaches you less than *predicting* what it will do and then checking.
+Reading code teaches you less than *predicting* what it'll do and then checking.
 This file turns each section of the [README](README.md) into a few quick
 active-recall prompts.
 
@@ -41,8 +41,8 @@ stages?
 1500 ms. The stages run **in series** (you can't synthesize speech until the LLM has
 produced text until STT has produced a transcript), so their delays add rather than
 overlap, and all three sit behind the 500 ms end-pointing wait, because nothing can
-start until the agent concludes the turn is over. If you only counted the models you
-would get 1000 ms and be wrong by a third. Streaming the stages so they overlap is
+start until the agent concludes the turn is over. If you only counted the models you'd
+get 1000 ms and be wrong by a third. Streaming the stages so they overlap is
 the main way to shrink the processing half; tightening the VAD window shrinks the
 other half, at the cost of cutting people off mid-thought.
 </details>
@@ -141,9 +141,9 @@ point? Why not?
 <details><summary>▸ Answer</summary>
 
 No. The interruption arrives at the same moment (1800 ms) in both runs, but it lands
-in a different state. Speech-to-speech began speaking at 1600 ms, so it is cut off
-mid-joke and you see a `response_start` before the barge-in. The pipeline would not
-have spoken until 2100 ms, so it is still in THINKING; the turn is superseded and
+in a different state. Speech-to-speech began speaking at 1600 ms, so it's cut off
+mid-joke and you see a `response_start` before the barge-in. The pipeline wouldn't
+have spoken until 2100 ms, so it's still in THINKING; the turn is superseded and
 its planned reply is dropped without a sound ever coming out. Same interruption,
 different code path, because latency changed *when* the agent was speaking.
 </details>
