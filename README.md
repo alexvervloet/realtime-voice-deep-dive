@@ -39,7 +39,7 @@ on why conversational time is a harder constraint than machine time.
 > engineering is a turn-taking state machine over that stream, plus one architectural
 > choice: an STT-LLM-TTS pipeline, or a single speech-to-speech model.**
 
-That is the whole repo. Batch audio, from the Multimodal dive, is upload a file, wait, get
+That's the whole repo. Batch audio, from the Multimodal dive, is upload a file, wait, get
 a result. Realtime is a conversation. You never have the whole recording, the user can cut
 in at any moment, and a one-second pause feels broken. Everything below, from frames and
 turn detection to barge-in, the latency budget, and the two architectures, is one face of
@@ -66,7 +66,7 @@ cp .env.example .env
 python check_setup.py
 ```
 
-There is one provider here, `mock`, and it needs no key. Unlike the sibling repos, this
+There's one provider here, `mock`, and it needs no key. Unlike the sibling repos, this
 dive doesn't switch between OpenAI and Claude. The box below says why. Everything runs
 offline and deterministically.
 
@@ -88,7 +88,7 @@ offline and deterministically.
 python examples/01_audio_is_frames.py        # offline
 ```
 
-Here is the first mental shift. You never have the recording. Audio arrives as a continuous
+Here's the first mental shift. You never have the recording. Audio arrives as a continuous
 stream of tiny frames, about 10 to 20 ms each, and you work with the frames so far. The
 example builds one simulated utterance as frames, a speech frame per word followed by a run
 of silence, and a simple voice-activity rule finds the end of the turn. Turn detection is a
@@ -106,11 +106,11 @@ python examples/02_pipeline.py
 The first way to build a voice agent is three models in series: speech-to-text, then the
 LLM, then text-to-speech. Each hop adds delay, and the number the user feels is
 time-to-first-audio, meaning how long after they stop talking before they hear anything.
-That is the end-pointing wait first, because nothing downstream starts until the VAD
+That's the end-pointing wait first, because nothing downstream starts until the VAD
 decides the user is done, then STT plus LLM plus TTS stacked on top. 1500 ms in this
 repo's budget. The example prints it line by line so you see where the dead air comes from,
 and why streaming each stage so they overlap is the fix. What the pipeline buys you is
-control. There is a text transcript in the middle you can log, moderate, and edit.
+control. There's a text transcript in the middle you can log, moderate, and edit.
 ([voice/stages.py](voice/stages.py))
 
 ---
@@ -137,10 +137,10 @@ python examples/04_barge_in.py
 
 This is the feature that separates a voice agent from a walkie-talkie. People interrupt
 ("no wait, actually...") and a good agent stops talking on the spot, discards the rest of
-its planned audio, and listens. An agent that talks over you feels broken, and it is the
+its planned audio, and listens. An agent that talks over you feels broken, and it's the
 most common thing that ruins a voice demo. The example sends a long agent response, has the
 user cut in partway through, and shows the session fire a barge-in and re-enter LISTENING
-mid-sentence. It works because of full-duplex audio, since you are still listening while
+mid-sentence. It works because of full-duplex audio, since you're still listening while
 speaking, and fast cancellation, killing the TTS stream and flushing the buffer the instant
 the user's voice is detected.
 
@@ -170,9 +170,9 @@ python examples/06_speech_to_speech.py
 ```
 
 Speech-to-speech uses a single multimodal model that hears audio and speaks audio directly,
-with no transcript in the middle. It wins on latency, since there is one hop, and on
+with no transcript in the middle. It wins on latency, since there's one hop, and on
 naturalness, since it hears tone and pacing and can speak with them. It gives up control
-and observability, because there is no text step to log, moderate, redact, or hand to a
+and observability, because there's no text step to log, moderate, redact, or hand to a
 tool. The example lays out the decision. Speech-to-speech for consumer assistants and
 companions where latency and feel dominate. The pipeline when you need the transcript for
 guardrails, tools and RAG, auditing, or per-stage vendor choice. And often a hybrid, with a
@@ -241,7 +241,7 @@ real audio and hardening the conversation.
 
 ## From teaching code to production
 
-This repo simulates the transport so the mechanics stay visible. Here is what each piece
+This repo simulates the transport so the mechanics stay visible. Here's what each piece
 becomes when it's real.
 
 | This repo's simulation | In production |
