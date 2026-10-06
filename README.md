@@ -299,7 +299,7 @@ Run `python check_setup.py` first. Then, by symptom:
 | "this dive is an offline simulator" note | You set `PROVIDER` to something other than `mock`. That's fine; there's only a mock here, and the note is just letting you know. |
 | The timeline's millisecond numbers look arbitrary | They're teaching approximations (see `voice/stages.py`); the *shape* (end-pointing first, then hops that stack, and barge-in cancelling output) is the lesson, not the exact figures. |
 | Barge-in didn't fire when I expected | The interrupting turn has to start *before* the agent's response ends. Move its `start_ms` earlier, or pick a longer reply. If it starts before the response *begins*, you get the other branch instead: the planned reply is dropped before a sound comes out. |
-| `SyntaxError` / odd type errors on startup | You're likely on Python 3.9 or older; this repo needs 3.10+. |
+| `SyntaxError` / odd type errors on startup | You're likely on Python 3.10 or older; this repo needs 3.11+. |
 
 Still stuck? Every file is small and self-contained. Open it, read the docstring at
 the top, and run it directly. [voice/session.py](voice/session.py) is the whole
