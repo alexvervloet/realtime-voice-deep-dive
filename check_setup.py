@@ -30,10 +30,10 @@ def fail(msg):
 def check_python():
     print("Python version")
     major, minor = sys.version_info[:2]
-    if (major, minor) >= (3, 10):
-        ok(f"Python {major}.{minor} (3.10+ required)")
+    if (major, minor) >= (3, 11):
+        ok(f"Python {major}.{minor} (3.11+ required)")
         return True
-    fail(f"Python {major}.{minor}: this repo needs Python 3.10 or newer.")
+    fail(f"Python {major}.{minor}: this repo needs Python 3.11 or newer (3.10 reached end of life on 2026-10-01).")
     return False
 
 
